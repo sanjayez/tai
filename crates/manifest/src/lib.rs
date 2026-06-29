@@ -35,25 +35,18 @@ pub trait ManifestSignatureVerifier {
 
 impl SignedManifest {
     pub fn signing_payload(&self) -> String {
-        let kind = match &self.kind {
-            ManifestKind::Tool => "tool",
-            ManifestKind::Model => "model",
-            ManifestKind::Runtime => "runtime",
+        #[derive(Serialize)]
+        struct SigningPayload<'a> {
+            kind: &'static str,
+            artifacts: &'a [ManifestArtifact],
+        }
+
+        let payload = SigningPayload {
+            kind: self.kind.label(),
+            artifacts: &self.artifacts,
         };
 
-        let artifacts = self
-            .artifacts
-            .iter()
-            .map(|artifact| {
-                format!(
-                    "{}|{}|{}|{}",
-                    artifact.name, artifact.version, artifact.path, artifact.sha256
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-
-        format!("{}\n{}", kind, artifacts)
+        serde_json::to_string(&payload).expect("manifest signing payload should serialize")
     }
 
     pub fn verify<V: ManifestSignatureVerifier>(&self, verifier: &V) -> ManifestStatus {
@@ -65,6 +58,16 @@ impl SignedManifest {
             ManifestStatus::Trusted
         } else {
             ManifestStatus::InvalidSignature
+        }
+    }
+}
+
+impl ManifestKind {
+    pub fn label(&self) -> &'static str {
+        match self {
+            ManifestKind::Tool => "tool",
+            ManifestKind::Model => "model",
+            ManifestKind::Runtime => "runtime",
         }
     }
 }
@@ -106,5 +109,26 @@ mod tests {
         };
 
         assert_eq!(manifest.verify(&AlwaysTrusted), ManifestStatus::Empty);
+    }
+
+    #[test]
+    fn signing_payload_uses_structured_json() {
+        let manifest = SignedManifest {
+            kind: ManifestKind::Runtime,
+            artifacts: vec![ManifestArtifact {
+                name: "legit-model\nmalicious-model".into(),
+                version: "0.1.0|2.0.0".into(),
+                path: "models/llm/model.gguf".into(),
+                sha256: "abc".into(),
+            }],
+            signature: "sig".into(),
+        };
+
+        let payload = manifest.signing_payload();
+
+        assert!(payload.starts_with("{\"kind\":\"runtime\",\"artifacts\":["));
+        assert!(payload.contains("\\n"));
+        assert!(!payload.contains("legit-model\nmalicious-model"));
+        assert!(!payload.contains("runtime\n"));
     }
 }
