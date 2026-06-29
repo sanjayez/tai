@@ -56,7 +56,20 @@ impl<V: SignatureVerifier> LicenseVerifier<V> {
 
 impl LicenseFile {
     pub fn signing_payload(&self) -> String {
-        format!("{}|{}|{}", self.customer_id, self.product, self.expires_on)
+        #[derive(Serialize)]
+        struct SigningPayload<'a> {
+            customer_id: &'a str,
+            product: &'a str,
+            expires_on: &'a str,
+        }
+
+        let payload = SigningPayload {
+            customer_id: &self.customer_id,
+            product: &self.product,
+            expires_on: &self.expires_on,
+        };
+
+        serde_json::to_string(&payload).expect("license signing payload should serialize")
     }
 }
 
@@ -104,5 +117,21 @@ mod tests {
             verifier.verify(&license, "2026-06-29"),
             LicenseStatus::Expired
         );
+    }
+
+    #[test]
+    fn signing_payload_uses_structured_json() {
+        let license = LicenseFile {
+            customer_id: "cust|evil-product".into(),
+            product: "real\nproduct".into(),
+            expires_on: "2026-12-31".into(),
+            signature: "sig".into(),
+        };
+
+        let payload = license.signing_payload();
+
+        assert!(payload.starts_with("{\"customer_id\":\"cust|evil-product\""));
+        assert!(payload.contains("\\n"));
+        assert!(!payload.contains("real\nproduct"));
     }
 }

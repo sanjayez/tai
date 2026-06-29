@@ -21,11 +21,22 @@ pub trait KeyProtector {
     fn unwrap_key(&self, wrapped_key: &[u8]) -> Result<Vec<u8>, SecureStorageError>;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct SqlCipherOpenPlan {
     pub database_path: String,
     pub key_bytes: Vec<u8>,
     pub pragmas: Vec<String>,
+}
+
+impl std::fmt::Debug for SqlCipherOpenPlan {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("SqlCipherOpenPlan")
+            .field("database_path", &self.database_path)
+            .field("key_bytes", &"[REDACTED]")
+            .field("pragmas", &self.pragmas)
+            .finish()
+    }
 }
 
 impl SqlCipherOpenPlan {
@@ -87,5 +98,14 @@ mod tests {
             .iter()
             .any(|pragma| pragma.contains("kdf_iter")));
         assert!(plan.pragmas.iter().any(|pragma| pragma.contains("WAL")));
+    }
+
+    #[test]
+    fn sqlcipher_open_plan_debug_redacts_key_bytes() {
+        let plan = SqlCipherOpenPlan::new("app.db", vec![1; DB_KEY_BYTES]);
+        let debug = format!("{plan:?}");
+
+        assert!(debug.contains("[REDACTED]"));
+        assert!(!debug.contains("1, 1, 1"));
     }
 }
