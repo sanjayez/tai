@@ -1,0 +1,38 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/app-core",
+  "crates/tally-client",
+  "crates/tally-xml",
+  "crates/tool-router",
+  "crates/local-llm",
+  "crates/local-ocr",
+  "crates/app-db",
+  "crates/secure-storage",
+  "crates/license",
+  "crates/manifest",
+  "crates/audit-log",
+]
+exclude = [
+  "apps/desktop/src-tauri",
+]
+
+[workspace.package]
+edition = "2021"
+license = "UNLICENSED"
+version = "0.1.0"
+
+[workspace.dependencies]
+audit-log = { path = "crates/audit-log" }
+app-db = { path = "crates/app-db" }
+license = { path = "crates/license" }
+local-llm = { path = "crates/local-llm" }
+local-ocr = { path = "crates/local-ocr" }
+manifest = { path = "crates/manifest" }
+secure-storage = { path = "crates/secure-storage" }
+tally-client = { path = "crates/tally-client" }
+tally-xml = { path = "crates/tally-xml" }
+tool-router = { path = "crates/tool-router" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
