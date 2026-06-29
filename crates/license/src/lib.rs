@@ -225,9 +225,6 @@ mod tests {
 
         let verifier = LicenseVerifier::new("tally-ai-companion", AlwaysValid);
 
-        assert_eq!(
-            verifier.verify(&license, ""),
-            LicenseStatus::InvalidDate
-        );
+        assert_eq!(verifier.verify(&license, ""), LicenseStatus::InvalidDate);
     }
 }
