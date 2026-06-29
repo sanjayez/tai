@@ -40,7 +40,10 @@ mod tests {
 
     #[test]
     fn builds_localhost_url() {
-        assert_eq!(TallyEndpoint::localhost(9000).url(), "http://127.0.0.1:9000");
+        assert_eq!(
+            TallyEndpoint::localhost(9000).url(),
+            "http://127.0.0.1:9000"
+        );
     }
 
     #[test]
@@ -50,4 +53,3 @@ mod tests {
         assert!(xml.contains("<TYPE>Ledger</TYPE>"));
     }
 }
-

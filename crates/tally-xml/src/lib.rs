@@ -68,4 +68,3 @@ mod tests {
         assert!(xml.contains("A&amp;B"));
     }
 }
-

@@ -55,4 +55,3 @@ mod tests {
         assert_eq!(tools[0].confirmation_policy, ConfirmationPolicy::Never);
     }
 }
-
