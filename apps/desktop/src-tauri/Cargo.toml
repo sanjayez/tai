@@ -1,16 +1,15 @@
 [package]
 name = "tally-ai-companion-desktop"
-version = "0.1.0"
+version.workspace = true
 description = "Offline Tally AI Companion desktop app"
-edition = "2021"
-license = "UNLICENSED"
+edition.workspace = true
+license.workspace = true
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-app-core = { path = "../../../crates/app-core" }
-
+serde.workspace = true
+serde_json.workspace = true
+app-core.workspace = true

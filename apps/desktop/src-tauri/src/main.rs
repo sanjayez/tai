@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 #[tauri::command]
 fn app_status() -> app_core::AppStatus {
     app_core::AppStatus::initial()

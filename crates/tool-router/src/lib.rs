@@ -50,8 +50,9 @@ mod tests {
     #[test]
     fn exposes_core_tool_definitions() {
         let tools = core_tools();
+        let first = tools.first().expect("core_tools should not be empty");
 
-        assert_eq!(tools[0].name, "tally.list_ledgers");
-        assert_eq!(tools[0].confirmation_policy, ConfirmationPolicy::Never);
+        assert_eq!(first.name, "tally.list_ledgers");
+        assert_eq!(first.confirmation_policy, ConfirmationPolicy::Never);
     }
 }

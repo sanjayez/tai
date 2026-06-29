@@ -52,15 +52,26 @@ impl AuditEvent {
     }
 
     pub fn hash_payload(&self) -> String {
-        format!(
-            "{}|{}|{}|{}|{}|{}",
-            self.id,
-            self.occurred_at,
-            self.action_label(),
-            self.subject,
-            self.details_json,
-            self.previous_hash
-        )
+        #[derive(Serialize)]
+        struct HashPayload<'a> {
+            id: &'a str,
+            occurred_at: &'a str,
+            action: &'a str,
+            subject: &'a str,
+            details_json: &'a str,
+            previous_hash: &'a str,
+        }
+
+        let payload = HashPayload {
+            id: &self.id,
+            occurred_at: &self.occurred_at,
+            action: self.action_label(),
+            subject: &self.subject,
+            details_json: &self.details_json,
+            previous_hash: &self.previous_hash,
+        };
+
+        serde_json::to_string(&payload).expect("audit hash payload should serialize")
     }
 }
 
@@ -100,6 +111,25 @@ mod tests {
 
         assert!(event.hash_payload().contains("hash_0"));
         assert!(event.hash_payload().contains("CompletedToolRun"));
+    }
+
+    #[test]
+    fn hash_payload_uses_structured_json() {
+        let event = AuditEvent::new(
+            "evt_1|shifted",
+            "2026-06-29T00:00:00Z",
+            AuditAction::CompletedToolRun,
+            "tally|list_ledgers",
+            "{\"note\":\"line\\nbreak\"}",
+            "hash_0",
+            "hash_1",
+        );
+
+        let payload = event.hash_payload();
+
+        assert!(payload.starts_with("{\"id\":\"evt_1|shifted\""));
+        assert!(payload.contains("\\\\nbreak"));
+        assert!(!payload.contains("line\nbreak"));
     }
 
     #[test]

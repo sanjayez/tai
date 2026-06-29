@@ -2,35 +2,66 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TallyEnvelope {
-    pub request_type: String,
-    pub body: String,
+    request_type: String,
+    report_type: String,
+    request_id: String,
+    body: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TallyCollection {
+    Ledgers,
+}
+
+impl TallyCollection {
+    fn collection_name(self) -> &'static str {
+        match self {
+            TallyCollection::Ledgers => "Ledgers",
+        }
+    }
+
+    fn object_type(self) -> &'static str {
+        match self {
+            TallyCollection::Ledgers => "Ledger",
+        }
+    }
+
+    fn request_id(self) -> &'static str {
+        match self {
+            TallyCollection::Ledgers => "ListLedgers",
+        }
+    }
 }
 
 impl TallyEnvelope {
-    pub fn export_collection(collection_name: impl Into<String>) -> Self {
-        let collection_name = collection_name.into();
+    pub fn export_collection(collection: TallyCollection) -> Self {
         let body = format!(
-            "<DESC><STATICVARIABLES><SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT></STATICVARIABLES><TDL><TDLMESSAGE><COLLECTION NAME=\"{}\" ISMODIFY=\"No\"><TYPE>Ledger</TYPE><FETCH>Name</FETCH></COLLECTION></TDLMESSAGE></TDL></DESC>",
-            escape_xml_attr(&collection_name)
+            "<DESC><STATICVARIABLES><SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT></STATICVARIABLES><TDL><TDLMESSAGE><COLLECTION NAME=\"{}\" ISMODIFY=\"No\"><TYPE>{}</TYPE><FETCH>Name</FETCH></COLLECTION></TDLMESSAGE></TDL></DESC>",
+            escape_xml_attr(collection.collection_name()),
+            escape_xml_text(collection.object_type())
         );
 
         Self {
             request_type: "Export".into(),
+            report_type: "Collection".into(),
+            request_id: collection.request_id().into(),
             body,
         }
     }
 
     pub fn to_xml(&self) -> String {
         format!(
-            "<ENVELOPE><HEADER><VERSION>1</VERSION><TALLYREQUEST>{}</TALLYREQUEST><TYPE>Collection</TYPE><ID>ListLedgers</ID></HEADER><BODY>{}</BODY></ENVELOPE>",
+            "<ENVELOPE><HEADER><VERSION>1</VERSION><TALLYREQUEST>{}</TALLYREQUEST><TYPE>{}</TYPE><ID>{}</ID></HEADER><BODY>{}</BODY></ENVELOPE>",
             escape_xml_text(&self.request_type),
+            escape_xml_text(&self.report_type),
+            escape_xml_text(&self.request_id),
             self.body
         )
     }
 }
 
 pub fn list_ledgers_request() -> String {
-    TallyEnvelope::export_collection("Ledgers").to_xml()
+    TallyEnvelope::export_collection(TallyCollection::Ledgers).to_xml()
 }
 
 fn escape_xml_attr(input: &str) -> String {
@@ -63,8 +94,6 @@ mod tests {
 
     #[test]
     fn escapes_collection_name() {
-        let xml = TallyEnvelope::export_collection("A&B").to_xml();
-
-        assert!(xml.contains("A&amp;B"));
+        assert_eq!(escape_xml_attr("A&B"), "A&amp;B");
     }
 }

@@ -13,6 +13,7 @@ pub enum LicenseStatus {
     Unchecked,
     Valid,
     Expired,
+    InvalidDate,
     InvalidSignature,
     WrongProduct,
 }
@@ -46,12 +47,73 @@ impl<V: SignatureVerifier> LicenseVerifier<V> {
             return LicenseStatus::InvalidSignature;
         }
 
-        if license.expires_on.as_str() < today {
+        let Some(expires_on) = IsoDate::parse(&license.expires_on) else {
+            return LicenseStatus::InvalidDate;
+        };
+        let Some(today) = IsoDate::parse(today) else {
+            return LicenseStatus::InvalidDate;
+        };
+
+        if expires_on < today {
             return LicenseStatus::Expired;
         }
 
         LicenseStatus::Valid
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct IsoDate {
+    year: u16,
+    month: u8,
+    day: u8,
+}
+
+impl IsoDate {
+    fn parse(input: &str) -> Option<Self> {
+        if input.len() != 10 {
+            return None;
+        }
+
+        let bytes = input.as_bytes();
+        if bytes[4] != b'-' || bytes[7] != b'-' {
+            return None;
+        }
+
+        if !bytes
+            .iter()
+            .enumerate()
+            .all(|(index, byte)| index == 4 || index == 7 || byte.is_ascii_digit())
+        {
+            return None;
+        }
+
+        let year = input[0..4].parse::<u16>().ok()?;
+        let month = input[5..7].parse::<u8>().ok()?;
+        let day = input[8..10].parse::<u8>().ok()?;
+
+        if !(1..=12).contains(&month) {
+            return None;
+        }
+
+        let max_day = match month {
+            1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+            4 | 6 | 9 | 11 => 30,
+            2 if is_leap_year(year) => 29,
+            2 => 28,
+            _ => return None,
+        };
+
+        if day == 0 || day > max_day {
+            return None;
+        }
+
+        Some(Self { year, month, day })
+    }
+}
+
+fn is_leap_year(year: u16) -> bool {
+    (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400)
 }
 
 impl LicenseFile {
@@ -133,5 +195,39 @@ mod tests {
         assert!(payload.starts_with("{\"customer_id\":\"cust|evil-product\""));
         assert!(payload.contains("\\n"));
         assert!(!payload.contains("real\nproduct"));
+    }
+
+    #[test]
+    fn rejects_invalid_expiry_dates() {
+        let license = LicenseFile {
+            customer_id: "cust_1".into(),
+            product: "tally-ai-companion".into(),
+            expires_on: "2026-6-29".into(),
+            signature: "sig".into(),
+        };
+
+        let verifier = LicenseVerifier::new("tally-ai-companion", AlwaysValid);
+
+        assert_eq!(
+            verifier.verify(&license, "2026-06-29"),
+            LicenseStatus::InvalidDate
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_today_dates() {
+        let license = LicenseFile {
+            customer_id: "cust_1".into(),
+            product: "tally-ai-companion".into(),
+            expires_on: "2026-12-31".into(),
+            signature: "sig".into(),
+        };
+
+        let verifier = LicenseVerifier::new("tally-ai-companion", AlwaysValid);
+
+        assert_eq!(
+            verifier.verify(&license, ""),
+            LicenseStatus::InvalidDate
+        );
     }
 }
