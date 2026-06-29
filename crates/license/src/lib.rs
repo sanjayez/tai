@@ -8,8 +8,9 @@ pub struct LicenseFile {
     pub signature: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum LicenseStatus {
+    Unchecked,
     Valid,
     Expired,
     InvalidSignature,

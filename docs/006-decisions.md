@@ -16,21 +16,21 @@ Revisit When:
 
 We support shared LAN deployments, coordinated multi-user local servers, or unusually heavy local analytics.
 
-## ADR-002: Keep Tauri Runtime Separate From Core Rust Workspace Initially
+## ADR-002: Include Tauri Backend In Core Rust CI
 
 Status: Accepted
 
 Decision:
 
-Scaffold the Tauri app under `apps/desktop`, but keep `apps/desktop/src-tauri` out of the root Rust workspace for the initial lab setup.
+Include `apps/desktop/src-tauri` in the root Rust workspace so normal workspace CI compiles the Tauri command surface.
 
 Reason:
 
-Core product crates should remain fast to build and test while desktop packaging dependencies evolve.
+The Tauri backend is part of the customer runtime. Excluding it from `cargo clippy --workspace` and `cargo test --workspace` lets Rust compile errors in Tauri commands pass CI silently.
 
 Revisit When:
 
-The desktop command surface stabilizes and packaging becomes part of the normal CI gate.
+If Tauri compile times become too large for the default CI loop, split it into an explicit desktop Rust job rather than removing coverage.
 
 ## ADR-003: Treat Tally As The Source Of Truth
 

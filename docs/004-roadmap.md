@@ -66,6 +66,7 @@
 - App, sidecars, model placement, OCR runtime, migrations, and license verifier.
 - Signed manifests for included sidecars, models, and tools.
 - Encrypted database creation on install or first launch.
+- Opt-in model bundling so routine builds do not embed multi-GB GGUF files.
 - Offline install/start smoke test.
 
 ## Milestone 8: Field Pilot

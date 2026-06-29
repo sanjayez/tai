@@ -22,7 +22,6 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
-    "resources": ["../../../models"]
+    "targets": ["nsis"]
   }
 }

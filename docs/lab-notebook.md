@@ -59,3 +59,24 @@ Next:
 - Implement real SQLCipher database opening.
 - Implement Windows DPAPI wrapper.
 - Choose signature scheme for licenses and manifests.
+
+## 2026-06-30 Review Comment Cleanup
+
+Goal:
+
+- Address unresolved PR review comments on the scaffolding branch.
+
+Changed:
+
+- Replaced debug formatting in audit hash payloads with explicit action labels.
+- Typed app license state as `LicenseStatus` and added an `Unchecked` variant.
+- Added the Tauri Rust backend to the root workspace so existing Rust CI compiles it.
+- Removed unconditional model-directory bundling from the Tauri config.
+
+Learned:
+
+- Workflow file updates require a GitHub token with `workflow` scope, so CI coverage was improved through workspace membership instead.
+
+Next:
+
+- Let CI validate the Tauri backend compile path.

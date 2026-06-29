@@ -41,12 +41,22 @@ impl AuditEvent {
         }
     }
 
+    pub fn action_label(&self) -> &'static str {
+        match &self.action {
+            AuditAction::ProposedToolRun => "ProposedToolRun",
+            AuditAction::ConfirmedToolRun => "ConfirmedToolRun",
+            AuditAction::RejectedToolRun => "RejectedToolRun",
+            AuditAction::CompletedToolRun => "CompletedToolRun",
+            AuditAction::FailedToolRun => "FailedToolRun",
+        }
+    }
+
     pub fn hash_payload(&self) -> String {
         format!(
-            "{}|{}|{:?}|{}|{}|{}",
+            "{}|{}|{}|{}|{}|{}",
             self.id,
             self.occurred_at,
-            self.action,
+            self.action_label(),
             self.subject,
             self.details_json,
             self.previous_hash
@@ -89,5 +99,21 @@ mod tests {
         );
 
         assert!(event.hash_payload().contains("hash_0"));
+        assert!(event.hash_payload().contains("CompletedToolRun"));
+    }
+
+    #[test]
+    fn action_label_is_explicit() {
+        let event = AuditEvent::new(
+            "evt_1",
+            "2026-06-29T00:00:00Z",
+            AuditAction::FailedToolRun,
+            "tally.list_ledgers",
+            "{}",
+            "hash_0",
+            "hash_1",
+        );
+
+        assert_eq!(event.action_label(), "FailedToolRun");
     }
 }

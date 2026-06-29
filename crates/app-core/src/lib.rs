@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct AppStatus {
     pub offline_ready: bool,
     pub tally_endpoint: Option<tally_client::TallyEndpoint>,
-    pub license_state: String,
+    pub license_state: license::LicenseStatus,
 }
 
 impl AppStatus {
@@ -12,7 +12,7 @@ impl AppStatus {
         Self {
             offline_ready: true,
             tally_endpoint: None,
-            license_state: "unchecked".into(),
+            license_state: license::LicenseStatus::Unchecked,
         }
     }
 }
@@ -30,7 +30,7 @@ mod tests {
         let status = AppStatus::initial();
 
         assert!(status.offline_ready);
-        assert_eq!(status.license_state, "unchecked");
+        assert_eq!(status.license_state, license::LicenseStatus::Unchecked);
     }
 
     #[test]

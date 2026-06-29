@@ -12,8 +12,6 @@ members = [
   "crates/license",
   "crates/manifest",
   "crates/audit-log",
-]
-exclude = [
   "apps/desktop/src-tauri",
 ]
 
