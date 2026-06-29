@@ -82,7 +82,10 @@ mod tests {
 
         let verifier = LicenseVerifier::new("tally-ai-companion", AlwaysValid);
 
-        assert_eq!(verifier.verify(&license, "2026-06-29"), LicenseStatus::Valid);
+        assert_eq!(
+            verifier.verify(&license, "2026-06-29"),
+            LicenseStatus::Valid
+        );
     }
 
     #[test]
@@ -96,7 +99,9 @@ mod tests {
 
         let verifier = LicenseVerifier::new("tally-ai-companion", AlwaysValid);
 
-        assert_eq!(verifier.verify(&license, "2026-06-29"), LicenseStatus::Expired);
+        assert_eq!(
+            verifier.verify(&license, "2026-06-29"),
+            LicenseStatus::Expired
+        );
     }
 }
-

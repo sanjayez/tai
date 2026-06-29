@@ -82,7 +82,10 @@ mod tests {
     fn sqlcipher_open_plan_sets_security_pragmas() {
         let plan = SqlCipherOpenPlan::new("app.db", vec![1; DB_KEY_BYTES]);
 
-        assert!(plan.pragmas.iter().any(|pragma| pragma.contains("kdf_iter")));
+        assert!(plan
+            .pragmas
+            .iter()
+            .any(|pragma| pragma.contains("kdf_iter")));
         assert!(plan.pragmas.iter().any(|pragma| pragma.contains("WAL")));
     }
 }

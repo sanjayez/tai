@@ -55,4 +55,3 @@ mod tests {
         assert_eq!(response.text, "list ledgers");
     }
 }
-

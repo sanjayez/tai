@@ -43,4 +43,3 @@ mod tests {
         assert_eq!(result.blocks[0].text, "Invoice No. 42");
     }
 }
-
