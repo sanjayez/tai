@@ -34,11 +34,13 @@ models/                Local model placement docs; real models are not committed
 scripts/               Development, test, and packaging helpers
 ```
 
-## Prerequisites
+## Development Runtime
 
 - Rust stable with `clippy` and `rustfmt`.
-- Node.js 20 or newer for desktop UI development.
+- Node.js 20 or newer for desktop UI development and CI frontend checks.
 - Windows for full Tauri packaging.
+
+Node.js is a development and packaging dependency only. Tauri uses `npm run dev` to serve the React/Vite UI during development and `npm run build` to compile static frontend assets before packaging. The installed customer `.exe` does not run Node.js.
 
 ## Development Gates
 
