@@ -1,4 +1,4 @@
-# Tally AI Companion
+# Tai - Copilot for Tally Accounting
 
 Offline-first Windows desktop companion for TallyPrime and Tally ERP 9.
 
